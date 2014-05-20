@@ -3,16 +3,16 @@
    <description name="Kyanos Update site" url="http://abelgomez.github.io/kyanos.updates/">
       Kyanos persistence layer
    </description>
-   <feature url="features/fr.inria.atlanmod.kyanos.feature_0.1.0.201405201648.jar" id="fr.inria.atlanmod.kyanos.feature" version="0.1.0.201405201648">
+   <feature url="features/fr.inria.atlanmod.kyanos.feature_0.1.0.201405201702.jar" id="fr.inria.atlanmod.kyanos.feature" version="0.1.0.201405201702">
       <category name="Kyanos"/>
    </feature>
-   <feature url="features/org.mapdb.feature_0.9.10.201405201648.jar" id="org.mapdb.feature" version="0.9.10.201405201648">
+   <feature url="features/fr.inria.atlanmod.kyanos.benchmarks.deps.feature_0.1.0.201405201702.jar" id="fr.inria.atlanmod.kyanos.benchmarks.deps.feature" version="0.1.0.201405201702">
       <category name="Dependencies"/>
    </feature>
-   <feature url="features/com.tinkerpop.blueprints.feature_2.4.0.201405201648.jar" id="com.tinkerpop.blueprints.feature" version="2.4.0.201405201648">
+   <feature url="features/org.mapdb.feature_0.9.10.201405201702.jar" id="org.mapdb.feature" version="0.9.10.201405201702">
       <category name="Dependencies"/>
    </feature>
-   <feature url="features/fr.inria.atlanmod.kyanos.benchmarks.deps.feature_0.1.0.201405201648.jar" id="fr.inria.atlanmod.kyanos.benchmarks.deps.feature" version="0.1.0.201405201648">
+   <feature url="features/com.tinkerpop.blueprints.feature_2.4.0.201405201702.jar" id="com.tinkerpop.blueprints.feature" version="2.4.0.201405201702">
       <category name="Dependencies"/>
    </feature>
    <category-def name="Kyanos" label="Kyanos"/>
