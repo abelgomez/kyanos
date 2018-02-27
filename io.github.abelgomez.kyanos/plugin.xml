@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.emf.ecore.protocol_parser">
+      <parser
+            class="io.github.abelgomez.kyanos.core.impl.KyanosResourceFactoryImpl"
+            protocolName="kyanos-graph">
+      </parser>
+      <parser
+            class="io.github.abelgomez.kyanos.core.impl.KyanosResourceFactoryImpl"
+            protocolName="kyanos-map">
+      </parser>
+   </extension>
+
+</plugin>
