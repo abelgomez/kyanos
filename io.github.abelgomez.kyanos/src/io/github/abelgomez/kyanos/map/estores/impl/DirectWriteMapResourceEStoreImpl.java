@@ -8,16 +8,13 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.estores.map.impl;
+package io.github.abelgomez.kyanos.map.estores.impl;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -30,11 +27,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.jboss.util.collection.SoftValueHashMap;
 import org.mapdb.DB;
+import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 import io.github.abelgomez.kyanos.Logger;
 import io.github.abelgomez.kyanos.core.KyanosEObject;
@@ -42,7 +36,7 @@ import io.github.abelgomez.kyanos.core.KyanosInternalEObject;
 import io.github.abelgomez.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
 import io.github.abelgomez.kyanos.estores.SearcheableResourceEStore;
 
-public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableResourceEStore {
+public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceEStore {
 
 	protected static final String INSTANCE_OF = "kyanosInstanceOf";
 	protected static final String CONTAINER = "eContainer";
@@ -59,31 +53,13 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	protected Map<String, ContainerInfo> containersMap;
 	
 	protected Resource.Internal resource;
-	
-	protected LoadingCache<Tuple2<String, String>, Object> mapCache;
 
-	public DirectWriteMapResourceWithListsEStoreImpl(Resource.Internal resource, DB db) {
+	public DirectWriteMapResourceEStoreImpl(Resource.Internal resource, DB db) {
 		this.db = db;
 		this.resource = resource;
 		this.map = db.getHashMap("Kyanos");
 		this.instanceOfMap = db.getHashMap(INSTANCE_OF);
 		this.containersMap = db.getHashMap(CONTAINER);
-		this.mapCache = CacheBuilder.newBuilder().maximumSize(100).softValues().build(new CacheLoader<Tuple2<String, String>, Object>() {
-			@Override
-			public Object load(Tuple2<String, String> key) throws Exception {
-				Object value = map.get(key);
-				if (value == null) {
-					return new ArrayList<>();
-				} else if (value instanceof Object[]) {
-					Object[] array = (Object[]) value;
-					List<Object> list = new ArrayList<>(array.length + 10);
-					CollectionUtils.addAll(list, array);
-					return list;
-				} else {
-					return value;
-				}
-			}
-		});
 	}
 
 
@@ -120,9 +96,8 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 		if (!eReference.isMany()) {
 			return getEObject((String) value);
 		} else {
-			@SuppressWarnings("unchecked")
-			List<Object> list = (List<Object>) value;
-			return getEObject((String) list.get(index));
+			Object[] array = (Object[]) value;
+			return getEObject((String) array[index]);
 		}
 	}
 
@@ -142,14 +117,13 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 
 	protected Object set(KyanosEObject object, EAttribute eAttribute, int index, Object value) {
 		if (!eAttribute.isMany()) {
-			Object oldValue = map.put(new Tuple2<String, String>(object.kyanosId(), eAttribute.getName()), serializeToMapValue(eAttribute, value));
+			Object oldValue = map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), serializeToMapValue(eAttribute, value));
 			return parseMapValue(eAttribute, oldValue);
 		} else {
-			@SuppressWarnings("unchecked")
-			List<Object> list = (List<Object>) getFromMap(object, eAttribute);
-			Object oldValue = list.get(index); 
-			list.set(index, serializeToMapValue(eAttribute, value));
-			map.put(new Tuple2<String, String>(object.kyanosId(), eAttribute.getName()), list.toArray());
+			Object[] array = (Object[]) getFromMap(object, eAttribute);
+			Object oldValue = array[index]; 
+			array[index] = serializeToMapValue(eAttribute, value);
+			map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
 			return parseMapValue(eAttribute, oldValue);
 		}
 	}
@@ -158,14 +132,13 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 		updateContainment(object, eReference, referencedObject);
 		updateInstanceOf(referencedObject);
 		if (!eReference.isMany()) {
-			Object oldId = map.put(new Tuple2<String, String>(object.kyanosId(), eReference.getName()), referencedObject.kyanosId());
+			Object oldId = map.put(Fun.t2(object.kyanosId(), eReference.getName()), referencedObject.kyanosId());
 			return oldId != null ? getEObject((String) oldId) : null;
 		} else {
-			@SuppressWarnings("unchecked")
-			List<Object> list = (List<Object>) getFromMap(object, eReference);
-			Object oldId = list.get(index);
-			list.set(index, referencedObject.kyanosId());
-			map.put(new Tuple2<String, String>(object.kyanosId(), eReference.getName()), list.toArray());
+			Object[] array = (Object[]) getFromMap(object, eReference);
+			Object oldId = array[index];
+			array[index] = referencedObject.kyanosId();
+			map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
 			return oldId != null ? getEObject((String) oldId) : null;
 		}
 	}
@@ -174,7 +147,7 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public boolean isSet(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		return map.containsKey(new Tuple2<String, String>(kyanosEObject.kyanosId(), feature.getName()));
+		return map.containsKey(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
 	}
 
 
@@ -192,19 +165,23 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	}
 
 	protected void add(KyanosEObject object, EAttribute eAttribute, int index, Object value) {
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(object, eAttribute);
-		list.add(index, serializeToMapValue(eAttribute, value));
-		map.put(new Tuple2<String, String>(object.kyanosId(), eAttribute.getName()), list.toArray());
+		Object[] array = (Object[]) getFromMap(object, eAttribute);
+		if (array == null) {
+			array = new Object[] {};
+		}
+		array = ArrayUtils.add(array, index, serializeToMapValue(eAttribute, value));
+		map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
 	}
 
 	protected void add(KyanosEObject object, EReference eReference, int index, KyanosEObject referencedObject) {
 		updateContainment(object, eReference, referencedObject);
 		updateInstanceOf(referencedObject);
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(object, eReference);
-		list.add(index, referencedObject.kyanosId());
-		map.put(new Tuple2<String, String>(object.kyanosId(), eReference.getName()), list.toArray());
+		Object[] array = (Object[]) getFromMap(object, eReference);
+		if (array == null) {
+			array = new Object[] {};
+		}
+		array = ArrayUtils.add(array, index, referencedObject.kyanosId());
+		map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
 	}
 
 	@Override
@@ -220,20 +197,18 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	}
 
 	protected Object remove(KyanosEObject object, EAttribute eAttribute, int index) {
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(object, eAttribute);
-		Object oldValue = list.get(index);
-		list.remove(index);
-		map.put(new Tuple2<String, String>(object.kyanosId(), eAttribute.getName()), list.toArray());
+		Object[] array = (Object[]) getFromMap(object, eAttribute);
+		Object oldValue = array[index];
+		array = ArrayUtils.remove(array, index);
+		map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
 		return parseMapValue(eAttribute, oldValue);
 	}
 
 	protected Object remove(KyanosEObject object, EReference eReference, int index) {
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(object, eReference);
-		Object oldId = list.get(index);
-		list.remove(index);
-		map.put(new Tuple2<String, String>(object.kyanosId(), eReference.getName()), list.toArray());
+		Object[] array = (Object[]) getFromMap(object, eReference);
+		Object oldId = array[index];
+		array = ArrayUtils.remove(array, index);
+		map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
 		return getEObject((String) oldId);
 
 	}
@@ -249,7 +224,7 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public void unset(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		map.remove(new Tuple2<String, String>(kyanosEObject.kyanosId(), feature.getName()));
+		map.remove(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
 	}
 
 
@@ -262,9 +237,8 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public int size(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(kyanosEObject, feature);
-		return list != null ? list.size() : 0; 
+		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
+		return array != null ? array.length : 0; 
 	}
 
 
@@ -277,16 +251,15 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public int indexOf(InternalEObject object, EStructuralFeature feature, Object value) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(kyanosEObject, feature);
-		if (list== null) {
+		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
+		if (array == null) {
 			return -1;
 		}
 		if (feature instanceof EAttribute) {
-			return list.indexOf(serializeToMapValue((EAttribute) feature, value));
+			return ArrayUtils.indexOf(array, serializeToMapValue((EAttribute) feature, value));
 		} else {
 			KyanosEObject childEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(value, KyanosEObject.class);
-			return list.indexOf(childEObject.kyanosId());
+			return ArrayUtils.indexOf(array, childEObject.kyanosId());
 		}
 	}
 
@@ -294,16 +267,15 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public int lastIndexOf(InternalEObject object, EStructuralFeature feature, Object value) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		@SuppressWarnings("unchecked")
-		List<Object> list = (List<Object>) getFromMap(kyanosEObject, feature);
-		if (list == null) {
+		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
+		if (array == null) {
 			return -1;
 		}
 		if (feature instanceof EAttribute) {
-			return list.lastIndexOf(serializeToMapValue((EAttribute) feature, value));
+			return ArrayUtils.lastIndexOf(array, serializeToMapValue((EAttribute) feature, value));
 		} else {
 			KyanosEObject childEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(value, KyanosEObject.class);
-			return list.lastIndexOf(childEObject.kyanosId());
+			return ArrayUtils.lastIndexOf(array, childEObject.kyanosId());
 		}
 	}
 
@@ -311,7 +283,7 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	@Override
 	public void clear(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		map.put(new Tuple2<String, String>(kyanosEObject.kyanosId(), feature.getName()), new Object[] {});
+		map.put(Fun.t2(kyanosEObject.kyanosId(), feature.getName()), new Object[] {});
 	}
 
 
@@ -443,15 +415,7 @@ public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableRes
 	}
 	
 	protected Object getFromMap(KyanosEObject object, EStructuralFeature feature) {
-		if (!feature.isMany()) {
-			return map.get(new Tuple2<String, String>(object.kyanosId(), feature.getName()));
-		} else {
-			try {
-				return mapCache.get(new Tuple2<String, String>(object.kyanosId(), feature.getName()));
-			} catch (ExecutionException e) {
-			}
-		}
-		return null;
+		return map.get(Fun.t2(object.kyanosId(), feature.getName()));
 	}
 	
 }

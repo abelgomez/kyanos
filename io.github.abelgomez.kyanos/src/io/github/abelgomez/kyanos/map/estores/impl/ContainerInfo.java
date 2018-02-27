@@ -8,21 +8,21 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.estores.map.impl;
+package io.github.abelgomez.kyanos.map.estores.impl;
 
 import java.io.Serializable;
 
-class EClassInfo implements Serializable {
+class ContainerInfo implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public String nsURI;
+	public String containerId;
 	
-	public String className;
+	public String containingFeatureName;
 	
-	public EClassInfo(String nsURI, String className) {
-		this.nsURI = nsURI;
-		this.className = className;
+	public ContainerInfo(String containerId, String containingFeatureName) {
+		this.containerId = containerId;
+		this.containingFeatureName = containingFeatureName;
 	}
+	
 }
-

@@ -16,8 +16,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import io.github.abelgomez.kyanos.KyanosURI;
 import io.github.abelgomez.kyanos.core.KyanosResourceFactory;
-import io.github.abelgomez.kyanos.core.graph.impl.KyanosGraphResourceImpl;
-import io.github.abelgomez.kyanos.core.map.impl.KyanosMapResourceImpl;
+import io.github.abelgomez.kyanos.graph.impl.KyanosGraphResourceImpl;
+import io.github.abelgomez.kyanos.map.impl.KyanosMapResourceImpl;
 
 public class KyanosResourceFactoryImpl implements KyanosResourceFactory {
 

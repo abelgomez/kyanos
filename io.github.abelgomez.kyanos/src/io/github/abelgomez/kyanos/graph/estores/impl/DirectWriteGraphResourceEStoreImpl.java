@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.estores.graph.impl;
+package io.github.abelgomez.kyanos.graph.estores.impl;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,8 +28,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.github.abelgomez.kyanos.core.KyanosInternalEObject;
-import io.github.abelgomez.kyanos.core.graph.impl.KyanosGraph;
 import io.github.abelgomez.kyanos.estores.SearcheableResourceEStore;
+import io.github.abelgomez.kyanos.graph.impl.KyanosGraph;
 
 public class DirectWriteGraphResourceEStoreImpl implements SearcheableResourceEStore {
 

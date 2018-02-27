@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.estores.map.impl;
+package io.github.abelgomez.kyanos.map.estores.impl;
 
 import java.text.MessageFormat;
 import java.util.Arrays;

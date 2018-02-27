@@ -14,13 +14,13 @@ Bundle-ActivationPolicy: lazy
 Export-Package: io.github.abelgomez.kyanos,
  io.github.abelgomez.kyanos.core,
  io.github.abelgomez.kyanos.core.exceptions,
- io.github.abelgomez.kyanos.core.graph.impl,
  io.github.abelgomez.kyanos.core.impl,
- io.github.abelgomez.kyanos.core.map.impl,
  io.github.abelgomez.kyanos.estores,
- io.github.abelgomez.kyanos.estores.graph.impl,
  io.github.abelgomez.kyanos.estores.impl,
- io.github.abelgomez.kyanos.estores.map.impl
+ io.github.abelgomez.kyanos.graph.estores.impl,
+ io.github.abelgomez.kyanos.graph.impl,
+ io.github.abelgomez.kyanos.map.estores.impl,
+ io.github.abelgomez.kyanos.map.impl
 Bundle-ClassPath: .,
  lib/jars/commons-lang-2.6.jar,
  lib/jars/commons-io-2.4.jar,

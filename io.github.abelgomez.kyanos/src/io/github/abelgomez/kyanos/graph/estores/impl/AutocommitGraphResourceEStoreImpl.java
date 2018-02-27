@@ -8,25 +8,26 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.estores.map.impl;
+package io.github.abelgomez.kyanos.graph.estores.impl;
 
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.InternalEObject.EStore;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.mapdb.DB;
 
-public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStoreImpl {
+import io.github.abelgomez.kyanos.graph.impl.KyanosGraph;
+
+public class AutocommitGraphResourceEStoreImpl extends DirectWriteGraphResourceEStoreImpl {
 
 	/**
 	 * Default number of allowed modifications (100000) between commits on the
-	 * underlying db
+	 * underlying graph
 	 */
 	protected static final int OPS_BETWEEN_COMMITS_DEFAULT = 100000;
 
 	/**
-	 * Number of allowed modifications between commits on the underlying db
-	 * for this {@link AutocommitMapResourceEStoreImpl}
+	 * Number of allowed modifications between commits on the underlying graph
+	 * for this {@link AutocommitGraphResourceEStoreImpl}
 	 */
 	protected final int OPS_BETWEEN_COMMITS;
 
@@ -36,30 +37,30 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 	protected static int opCount = 0;
 
 	/**
-	 * Constructor for this {@link DB}-based {@link EStore}. Allows to
-	 * specify the number of allowed modification on the underlying db before
-	 * calling the {@link DB#commit()} method automatically.
+	 * Constructor for this {@link KyanosGraph}-based {@link EStore}. Allows to
+	 * specify the number of allowed modification on the underlying graph before
+	 * calling the {@link KyanosGraph#commit()} method automatically.
 	 * 
 	 * @param resource
-	 * @param db
+	 * @param graph
 	 * @param opsBetweenCommits
 	 */
-	public AutocommitMapResourceEStoreImpl(Resource.Internal resource, DB db, int opsBetweenCommits) {
-		super(resource, db);
+	public AutocommitGraphResourceEStoreImpl(Resource.Internal resource, KyanosGraph graph, int opsBetweenCommits) {
+		super(resource, graph);
 		this.OPS_BETWEEN_COMMITS = opsBetweenCommits;
 	}
 
 	/**
-	 * Constructor for this {@link DB}-based {@link EStore}. Allows to
+	 * Constructor for this {@link KyanosGraph}-based {@link EStore}. Allows to
 	 * make {@link #OPS_BETWEEN_COMMITS_DEFAULT} modifications on the underlying
-	 * db before calling the {@link DB#commit()} method
+	 * graph before calling the {@link KyanosGraph#commit()} method
 	 * automatically.
 	 * 
 	 * @param resource
-	 * @param db
+	 * @param graph
 	 */
-	public AutocommitMapResourceEStoreImpl(Resource.Internal resource, DB db) {
-		this(resource, db, OPS_BETWEEN_COMMITS_DEFAULT);
+	public AutocommitGraphResourceEStoreImpl(Resource.Internal resource, KyanosGraph graph) {
+		this(resource, graph, OPS_BETWEEN_COMMITS_DEFAULT);
 	}
 
 	@Override
@@ -67,7 +68,7 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		super.add(object, feature, index, value);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 	}
 
@@ -76,7 +77,7 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		Object returnValue = super.set(object, feature, index, value);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 		return returnValue;
 	}
@@ -86,7 +87,7 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		Object returnValue = super.move(object, feature, targetIndex, sourceIndex);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 		return returnValue;
 	}
@@ -96,7 +97,7 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		Object returnValue = super.remove(object, feature, index);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 		return returnValue;
 	}
@@ -106,7 +107,7 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		super.unset(object, feature);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 	}
 
@@ -115,12 +116,12 @@ public class AutocommitMapResourceEStoreImpl extends DirectWriteMapResourceEStor
 		super.clear(object, feature);
 		opCount = (opCount + 1) % OPS_BETWEEN_COMMITS;
 		if (opCount == 0) {
-			db.commit();
+			graph.commit();
 		}
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
-		db.commit();
+		graph.commit();
 	}
 }

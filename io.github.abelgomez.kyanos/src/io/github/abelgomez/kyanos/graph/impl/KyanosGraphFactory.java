@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  *******************************************************************************/
-package io.github.abelgomez.kyanos.core.graph.impl;
+package io.github.abelgomez.kyanos.graph.impl;
 
 import java.io.File;
 import java.nio.file.Path;
