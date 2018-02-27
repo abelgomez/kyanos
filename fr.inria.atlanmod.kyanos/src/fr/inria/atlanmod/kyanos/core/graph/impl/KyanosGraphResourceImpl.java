@@ -48,14 +48,12 @@ import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosResource;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.estores.graph.impl.AutocommitGraphResourceEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.graph.impl.DirectWriteGraphResourceEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.IsSetCachingDelegatedEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.SizeCachingDelegatedEStoreImpl;
 import fr.inria.atlanmod.kyanos.datastore.exceptions.InvalidOptionsException;
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraph;
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraphFactory;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
+import fr.inria.atlanmod.kyanos.estores.graph.impl.AutocommitGraphResourceEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.graph.impl.DirectWriteGraphResourceEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.impl.IsSetCachingDelegatedEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.impl.SizeCachingDelegatedEStoreImpl;
 
 public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResource {
 

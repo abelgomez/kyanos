@@ -24,7 +24,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import fr.inria.atlanmod.kyanos.core.KyanosEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosResource;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.OwnedTransientEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.impl.OwnedTransientEStoreImpl;
 
 public class KyanosEObjectImpl extends MinimalEStoreEObjectImpl implements KyanosInternalEObject {
 

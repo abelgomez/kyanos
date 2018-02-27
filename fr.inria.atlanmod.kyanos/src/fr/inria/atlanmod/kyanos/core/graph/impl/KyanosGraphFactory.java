@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.graphs;
+package fr.inria.atlanmod.kyanos.core.graph.impl;
 
 import java.io.File;
 import java.nio.file.Path;

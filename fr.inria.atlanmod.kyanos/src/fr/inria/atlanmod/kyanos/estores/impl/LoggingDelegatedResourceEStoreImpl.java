@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.estores.impl;
 
 import java.text.MessageFormat;
 
@@ -21,7 +21,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import fr.inria.atlanmod.kyanos.KyanosPlugin;
 import fr.inria.atlanmod.kyanos.Logger;
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
 
 /**
  * A {@link SearcheableResourceEStore} wrapper that logs every call to its

@@ -47,11 +47,11 @@ import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosResource;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.IsSetCachingDelegatedEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.SizeCachingDelegatedEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.map.impl.DirectWriteMapResourceEStoreImpl;
 import fr.inria.atlanmod.kyanos.datastore.exceptions.InvalidOptionsException;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
+import fr.inria.atlanmod.kyanos.estores.impl.IsSetCachingDelegatedEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.impl.SizeCachingDelegatedEStoreImpl;
+import fr.inria.atlanmod.kyanos.estores.map.impl.DirectWriteMapResourceEStoreImpl;
 
 public class KyanosMapResourceImpl extends ResourceImpl implements KyanosResource {
 

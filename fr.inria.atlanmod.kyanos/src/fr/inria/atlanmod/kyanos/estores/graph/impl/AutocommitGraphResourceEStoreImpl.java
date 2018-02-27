@@ -8,14 +8,14 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.graph.impl;
+package fr.inria.atlanmod.kyanos.estores.graph.impl;
 
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.InternalEObject.EStore;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraph;
+import fr.inria.atlanmod.kyanos.core.graph.impl.KyanosGraph;
 
 public class AutocommitGraphResourceEStoreImpl extends DirectWriteGraphResourceEStoreImpl {
 

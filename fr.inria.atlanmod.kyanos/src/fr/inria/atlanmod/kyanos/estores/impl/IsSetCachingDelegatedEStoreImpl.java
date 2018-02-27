@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.estores.impl;
 
 import java.util.Map;
 
@@ -16,7 +16,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
 
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
 
 /**
  * A {@link SearcheableResourceEStore} wrapper that caches the size data

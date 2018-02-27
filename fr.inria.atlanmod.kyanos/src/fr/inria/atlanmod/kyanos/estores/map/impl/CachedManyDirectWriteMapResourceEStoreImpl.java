@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.map.impl;
+package fr.inria.atlanmod.kyanos.estores.map.impl;
 
 import java.util.Map;
 

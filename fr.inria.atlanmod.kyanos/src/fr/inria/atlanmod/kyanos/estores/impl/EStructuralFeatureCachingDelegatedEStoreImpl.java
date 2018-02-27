@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.estores.impl;
 
 import java.util.Map;
 
@@ -17,7 +17,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.InternalEObject.EStore;
 
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
 
 /**
  * A {@link SearcheableResourceEStore} wrapper that caches {@link EStructuralFeature}s

@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.graph.impl;
+package fr.inria.atlanmod.kyanos.estores.graph.impl;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,8 +28,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
-import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraph;
+import fr.inria.atlanmod.kyanos.core.graph.impl.KyanosGraph;
+import fr.inria.atlanmod.kyanos.estores.SearcheableResourceEStore;
 
 public class DirectWriteGraphResourceEStoreImpl implements SearcheableResourceEStore {
 

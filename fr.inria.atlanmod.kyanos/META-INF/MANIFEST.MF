@@ -13,14 +13,14 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: fr.inria.atlanmod.kyanos,
  fr.inria.atlanmod.kyanos.core,
+ fr.inria.atlanmod.kyanos.core.graph.impl,
  fr.inria.atlanmod.kyanos.core.impl,
- fr.inria.atlanmod.kyanos.datastore,
- fr.inria.atlanmod.kyanos.datastore.estores,
- fr.inria.atlanmod.kyanos.datastore.estores.impl,
- fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo,
+ fr.inria.atlanmod.kyanos.core.map.impl,
  fr.inria.atlanmod.kyanos.datastore.exceptions,
- fr.inria.atlanmod.kyanos.datastore.graphs,
- fr.inria.atlanmod.kyanos.util
+ fr.inria.atlanmod.kyanos.estores,
+ fr.inria.atlanmod.kyanos.estores.graph.impl,
+ fr.inria.atlanmod.kyanos.estores.impl,
+ fr.inria.atlanmod.kyanos.estores.map.impl
 Bundle-ClassPath: .,
  lib/jars/commons-lang-2.6.jar,
  lib/jars/commons-io-2.4.jar,
