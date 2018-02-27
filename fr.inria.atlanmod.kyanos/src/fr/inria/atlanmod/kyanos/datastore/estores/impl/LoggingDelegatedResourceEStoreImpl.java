@@ -20,8 +20,8 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import fr.inria.atlanmod.kyanos.KyanosPlugin;
+import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.logger.Logger;
 
 /**
  * A {@link SearcheableResourceEStore} wrapper that logs every call to its

@@ -8,11 +8,11 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo;
+package fr.inria.atlanmod.kyanos.datastore.estores.map.impl;
 
 import java.io.Serializable;
 
-public class ContainerInfo implements Serializable {
+class ContainerInfo implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	

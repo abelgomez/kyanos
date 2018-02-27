@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.datastore.estores.graph.impl;
 
 import java.util.Arrays;
 import java.util.Iterator;

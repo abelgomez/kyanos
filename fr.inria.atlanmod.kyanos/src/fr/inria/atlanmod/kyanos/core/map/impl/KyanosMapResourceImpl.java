@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.core.impl;
+package fr.inria.atlanmod.kyanos.core.map.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,25 +37,23 @@ import org.eclipse.emf.ecore.impl.EStoreEObjectImpl.EStoreEList;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.osgi.util.NLS;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-
+import fr.inria.atlanmod.kyanos.KyanosURI;
+import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.core.KyanosEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosResource;
+import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
+import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectImpl;
 import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.AutocommitGraphResourceEStoreImpl;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.DirectWriteGraphResourceEStoreImpl;
 import fr.inria.atlanmod.kyanos.datastore.estores.impl.IsSetCachingDelegatedEStoreImpl;
 import fr.inria.atlanmod.kyanos.datastore.estores.impl.SizeCachingDelegatedEStoreImpl;
+import fr.inria.atlanmod.kyanos.datastore.estores.map.impl.DirectWriteMapResourceEStoreImpl;
 import fr.inria.atlanmod.kyanos.datastore.exceptions.InvalidOptionsException;
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraph;
-import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraphFactory;
-import fr.inria.atlanmod.kyanos.logger.Logger;
-import fr.inria.atlanmod.kyanos.util.KyanosURI;
 
-public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResource {
+public class KyanosMapResourceImpl extends ResourceImpl implements KyanosResource {
 
 	/**
 	 * Fake {@link EStructuralFeature} that represents the
@@ -102,21 +100,15 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 
 	protected SearcheableResourceEStore eStore;
 
-	/**
-	 * The underlying {@link KyanosGraph} that stores the data
-	 */
-	protected KyanosGraph kyanosGraph;
+	protected DB db;
+	
+	protected boolean isPersistent = false;
 
-	public KyanosGraphResourceImpl(URI uri) {
+	public KyanosMapResourceImpl(URI uri) {
 		super(uri);
-		this.kyanosGraph = KyanosGraphFactory.createTransientGraph();
-		this.eStore = new DirectWriteGraphResourceEStoreImpl(this, kyanosGraph);
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				KyanosGraphResourceImpl.this.kyanosGraph.shutdown();
-			}
-		});
+		this.db = DBMaker.newMemoryDB().closeOnJvmShutdown().make();
+		this.eStore = new DirectWriteMapResourceEStoreImpl(this, db);
+		this.isPersistent = false;
 	}
 
 	/**
@@ -125,7 +117,7 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 	 * @return
 	 */
 	protected File getFile() {
-		return FileUtils.getFile(KyanosURI.createKyanosURI(getURI()).toFileString());
+		return FileUtils.getFile(KyanosURI.createKyanosURI(getURI().appendSegment("kyanos.mapdb")).toFileString());
 	}
 
 	@Override
@@ -137,8 +129,9 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 			} else if (!getFile().exists()) {
 				throw new FileNotFoundException(uri.toFileString());
 			} else {
-				this.kyanosGraph = KyanosGraphFactory.createPersistenGraph(getFile(), options);
-				this.eStore = createResourceEStore(this.kyanosGraph);
+				this.db = DBMaker.newFileDB(getFile()).cacheLRUEnable().closeOnJvmShutdown().mmapFileEnableIfSupported().asyncWriteEnable().make();
+				this.isPersistent = true;
+				this.eStore = createResourceEStore(db);
 			}
 			this.options = options;
 			isLoaded = true;
@@ -163,28 +156,27 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 			}
 		}
 
-		if (!isLoaded() || !this.kyanosGraph.getFeatures().isPersistent) {
-			KyanosGraph newGraph = KyanosGraphFactory.createPersistenGraph(getFile(), options);
-			if (newGraph.getVertices().iterator().hasNext() || newGraph.getEdges().iterator().hasNext()) {
+		if (!isLoaded() || !this.isPersistent) {
+			if (!getFile().getParentFile().exists()) {
+				getFile().getParentFile().mkdirs();
+			}
+			DB newDb =  DBMaker.newFileDB(getFile()).cacheLRUEnable().closeOnJvmShutdown().mmapFileEnableIfSupported().asyncWriteEnable().make();
+			if (!newDb.getCatalog().isEmpty()) {
 				Logger.log(Logger.SEVERITY_WARNING, 
 						NLS.bind("Saving on existing graph {0} without previously loading its contents. "
 								+ "Graph contents will be lost.", getFile().toString()));
-				for (Edge edge : newGraph.getEdges()) {
-					edge.remove();
+				for (Entry<String, Object> entry : newDb.getCatalog().entrySet()) {
+					newDb.delete(entry.getKey());
 				}
-				newGraph.commit();
-				for (Vertex vertex : newGraph.getVertices()) {
-					vertex.remove();
-				}
-				newGraph.commit();
 			}
-			KyanosGraphFactory.copyGraph(this.kyanosGraph, newGraph);
-			this.kyanosGraph = newGraph;
-			this.eStore = createResourceEStore(this.kyanosGraph);
+			// TODO: Copy in memory map to persistent map
+			this.db = newDb;
+			this.isPersistent = true;
+			this.eStore = createResourceEStore(this.db);
 			this.isLoaded = true;
 		}
 
-		kyanosGraph.commit();
+		db.commit();
 	}
 
 	@Override
@@ -217,9 +209,10 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 	}
 
 	protected void shutdown() {
-		this.kyanosGraph.shutdown();
-		this.kyanosGraph = KyanosGraphFactory.createTransientGraph();
-		this.eStore = new DirectWriteGraphResourceEStoreImpl(this, kyanosGraph);
+		this.db.close();
+		this.db = DBMaker.newMemoryDB().closeOnJvmShutdown().make();
+		this.eStore = new DirectWriteMapResourceEStoreImpl(this, db);
+		this.isPersistent = false;
 	}
 
 	@Override
@@ -251,8 +244,8 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 	 * @param graph
 	 * @return
 	 */
-	protected SearcheableResourceEStore createResourceEStore(KyanosGraph graph) {
-		return new IsSetCachingDelegatedEStoreImpl(new SizeCachingDelegatedEStoreImpl(new AutocommitGraphResourceEStoreImpl(this, graph)));
+	protected SearcheableResourceEStore createResourceEStore(DB db) {
+		return new IsSetCachingDelegatedEStoreImpl(new SizeCachingDelegatedEStoreImpl(new DirectWriteMapResourceEStoreImpl(this, db)));
 	}
 
 	/**
@@ -279,7 +272,7 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 
 		@Override
 		public Object getNotifier() {
-			return KyanosGraphResourceImpl.this;
+			return KyanosMapResourceImpl.this;
 		}
 
 		@Override
@@ -289,7 +282,7 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 
 		@Override
 		protected boolean isNotificationRequired() {
-			return KyanosGraphResourceImpl.this.eNotificationRequired();
+			return KyanosMapResourceImpl.this.eNotificationRequired();
 		}
 
 		@Override
@@ -310,16 +303,16 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 		@Override
 		public NotificationChain inverseAdd(EObject object, NotificationChain notifications) {
 			InternalEObject eObject = (InternalEObject) object;
-			notifications = eObject.eSetResource(KyanosGraphResourceImpl.this, notifications);
-			KyanosGraphResourceImpl.this.attached(eObject);
+			notifications = eObject.eSetResource(KyanosMapResourceImpl.this, notifications);
+			KyanosMapResourceImpl.this.attached(eObject);
 			return notifications;
 		}
 
 		@Override
 		public NotificationChain inverseRemove(EObject object, NotificationChain notifications) {
 			InternalEObject eObject = (InternalEObject) object;
-			if (KyanosGraphResourceImpl.this.isLoaded || unloadingContents != null) {
-				KyanosGraphResourceImpl.this.detached(eObject);
+			if (KyanosMapResourceImpl.this.isLoaded || unloadingContents != null) {
+				KyanosMapResourceImpl.this.detached(eObject);
 			}
 			return eObject.eSetResource(null, notifications);
 		}
@@ -341,7 +334,7 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 			// compiler
 			for (EObject element : hardLinksList) {
 				KyanosInternalEObject internalElement = KyanosEObjectAdapterFactoryImpl.getAdapter(element, KyanosInternalEObject.class);
-				internalElement.kyanosSetResource(KyanosGraphResourceImpl.this);
+				internalElement.kyanosSetResource(KyanosMapResourceImpl.this);
 			}
 			super.delegateAdd(index, object);
 		}
@@ -395,10 +388,10 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 		}
 
 		protected void loaded() {
-			if (!KyanosGraphResourceImpl.this.isLoaded()) {
-				Notification notification = KyanosGraphResourceImpl.this.setLoaded(true);
+			if (!KyanosMapResourceImpl.this.isLoaded()) {
+				Notification notification = KyanosMapResourceImpl.this.setLoaded(true);
 				if (notification != null) {
-					KyanosGraphResourceImpl.this.eNotify(notification);
+					KyanosMapResourceImpl.this.eNotify(notification);
 				}
 			}
 		}
@@ -410,7 +403,7 @@ public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResou
 		}
 	}
 
-	public static void shutdownWithoutUnload(KyanosGraphResourceImpl resource) {
+	public static void shutdownWithoutUnload(KyanosMapResourceImpl resource) {
 		resource.shutdown();
 	}
 }

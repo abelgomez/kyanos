@@ -14,8 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 
+import fr.inria.atlanmod.kyanos.KyanosURI;
 import fr.inria.atlanmod.kyanos.core.KyanosResourceFactory;
-import fr.inria.atlanmod.kyanos.util.KyanosURI;
+import fr.inria.atlanmod.kyanos.core.graph.impl.KyanosGraphResourceImpl;
+import fr.inria.atlanmod.kyanos.core.map.impl.KyanosMapResourceImpl;
 
 public class KyanosResourceFactoryImpl implements KyanosResourceFactory {
 

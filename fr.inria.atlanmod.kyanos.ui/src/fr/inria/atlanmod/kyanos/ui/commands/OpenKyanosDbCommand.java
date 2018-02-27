@@ -32,9 +32,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.progress.UIJob;
 
+import fr.inria.atlanmod.kyanos.KyanosURI;
 import fr.inria.atlanmod.kyanos.ui.KyanosUiPlugin;
 import fr.inria.atlanmod.kyanos.ui.editors.KyanosEditor;
-import fr.inria.atlanmod.kyanos.util.KyanosURI;
 
 
 /**

@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.datastore.estores.map.impl;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -23,22 +23,22 @@ import org.eclipse.emf.ecore.EPackage.Registry;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.InternalEObject.EStore;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.jboss.util.collection.SoftValueHashMap;
 import org.mapdb.DB;
 import org.mapdb.Fun;
 import org.mapdb.Fun.Tuple2;
+import org.mapdb.Fun.Tuple3;
 
+import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.core.KyanosEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
 import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo.ContainerInfo;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo.EClassInfo;
-import fr.inria.atlanmod.kyanos.logger.Logger;
 
-public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceEStore {
+public class DirectWriteMapWithIndexesResourceEStoreImpl implements SearcheableResourceEStore {
 
 	protected static final String INSTANCE_OF = "kyanosInstanceOf";
 	protected static final String CONTAINER = "eContainer";
@@ -48,7 +48,8 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	
 	protected DB db;
 	
-	protected Map<Tuple2<String, String>, Object> map;
+	protected Map<Tuple3<String, String, Integer>, Object> map;
+	protected Map<Tuple2<String, String>, Integer> sizesMap;
 	
 	protected Map<String, EClassInfo> instanceOfMap;
 
@@ -56,10 +57,11 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	
 	protected Resource.Internal resource;
 
-	public DirectWriteMapResourceEStoreImpl(Resource.Internal resource, DB db) {
+	public DirectWriteMapWithIndexesResourceEStoreImpl(Resource.Internal resource, DB db) {
 		this.db = db;
 		this.resource = resource;
 		this.map = db.getHashMap("Kyanos");
+		this.sizesMap = db.getHashMap("SIZES");
 		this.instanceOfMap = db.getHashMap(INSTANCE_OF);
 		this.containersMap = db.getHashMap(CONTAINER);
 	}
@@ -75,38 +77,22 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	public Object get(InternalEObject object, EStructuralFeature feature, int index) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
 		if (feature instanceof EAttribute) {
-			return get(kyanosEObject, (EAttribute) feature, index);
+			Object value = map.get(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), index));
+			return parseMapValue((EAttribute) feature, value);
 		} else if (feature instanceof EReference) {
-			return get(kyanosEObject, (EReference) feature, index);
+			Object value = map.get(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), index));
+			return getEObject((String) value);
 		} else {
 			throw new IllegalArgumentException(feature.toString());
 		}
 	}
 	
-	protected Object get(KyanosEObject object, EAttribute eAttribute, int index) {
-		Object value = getFromMap(object, eAttribute);
-		if (!eAttribute.isMany()) {
-			return parseMapValue(eAttribute, value);
-		} else {
-			Object[] array = (Object[]) value;
-			return parseMapValue(eAttribute, array[index]);
-		}
-	}
-
-	protected Object get(KyanosEObject object, EReference eReference, int index) {
-		Object value = getFromMap(object, eReference);
-		if (!eReference.isMany()) {
-			return getEObject((String) value);
-		} else {
-			Object[] array = (Object[]) value;
-			return getEObject((String) array[index]);
-		}
-	}
-
-
 	@Override
 	public Object set(InternalEObject object, EStructuralFeature feature, int index, Object value) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
+		if (!feature.isMany()) {
+			sizesMap.put(Fun.t2(kyanosEObject.kyanosId(), feature.getName()), EStore.NO_INDEX);
+		}
 		if (feature instanceof EAttribute) {
 			return set(kyanosEObject, (EAttribute) feature, index, value);
 		} else if (feature instanceof EReference) {
@@ -118,102 +104,69 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	}
 
 	protected Object set(KyanosEObject object, EAttribute eAttribute, int index, Object value) {
-		if (!eAttribute.isMany()) {
-			Object oldValue = map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), serializeToMapValue(eAttribute, value));
-			return parseMapValue(eAttribute, oldValue);
-		} else {
-			Object[] array = (Object[]) getFromMap(object, eAttribute);
-			Object oldValue = array[index]; 
-			array[index] = serializeToMapValue(eAttribute, value);
-			map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
-			return parseMapValue(eAttribute, oldValue);
-		}
+		Object oldValue = map.put(Fun.t3(object.kyanosId(), eAttribute.getName(), index), serializeToMapValue(eAttribute, value));
+		return parseMapValue(eAttribute, oldValue);
 	}
 
 	protected Object set(KyanosEObject object, EReference eReference, int index, KyanosEObject referencedObject) {
 		updateContainment(object, eReference, referencedObject);
 		updateInstanceOf(referencedObject);
-		if (!eReference.isMany()) {
-			Object oldId = map.put(Fun.t2(object.kyanosId(), eReference.getName()), referencedObject.kyanosId());
-			return oldId != null ? getEObject((String) oldId) : null;
-		} else {
-			Object[] array = (Object[]) getFromMap(object, eReference);
-			Object oldId = array[index];
-			array[index] = referencedObject.kyanosId();
-			map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
-			return oldId != null ? getEObject((String) oldId) : null;
-		}
+		Object oldId = map.put(Fun.t3(object.kyanosId(), eReference.getName(), index), referencedObject.kyanosId());
+		return oldId != null ? getEObject((String) oldId) : null;
 	}
 
 
 	@Override
 	public boolean isSet(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		return map.containsKey(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+		return sizesMap.containsKey(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
 	}
 
 
 	@Override
 	public void add(InternalEObject object, EStructuralFeature feature, int index, Object value) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
+		// Make space for the new element
+		Integer size = sizesMap.get(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+		if (size == null) {
+			size = 0;
+		}
+		for (int i = size - 1; i >= index; i--) {
+			Object movingValue = map.get(Fun.t3(kyanosEObject.kyanosId(),  feature.getName(), i));
+			map.put(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), i + 1), movingValue);
+		}
+		sizesMap.put(Fun.t2(kyanosEObject.kyanosId(), feature.getName()), size + 1);
+		
+		// add element
 		if (feature instanceof EAttribute) {
-			add(kyanosEObject, (EAttribute) feature, index, value);
+			map.put(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), index), value);
 		} else if (feature instanceof EReference) {
 			KyanosEObject referencedEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(value, KyanosEObject.class);
-			add(kyanosEObject, (EReference) feature, index, referencedEObject);
+			updateContainment(kyanosEObject, (EReference) feature, referencedEObject);
+			updateInstanceOf(referencedEObject);
+			map.put(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), index), referencedEObject.kyanosId());
 		} else {
 			throw new IllegalArgumentException(feature.toString());
 		}
-	}
-
-	protected void add(KyanosEObject object, EAttribute eAttribute, int index, Object value) {
-		Object[] array = (Object[]) getFromMap(object, eAttribute);
-		if (array == null) {
-			array = new Object[] {};
-		}
-		array = ArrayUtils.add(array, index, serializeToMapValue(eAttribute, value));
-		map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
-	}
-
-	protected void add(KyanosEObject object, EReference eReference, int index, KyanosEObject referencedObject) {
-		updateContainment(object, eReference, referencedObject);
-		updateInstanceOf(referencedObject);
-		Object[] array = (Object[]) getFromMap(object, eReference);
-		if (array == null) {
-			array = new Object[] {};
-		}
-		array = ArrayUtils.add(array, index, referencedObject.kyanosId());
-		map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
 	}
 
 	@Override
 	public Object remove(InternalEObject object, EStructuralFeature feature, int index) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		if (feature instanceof EAttribute) {
-			return remove(kyanosEObject, (EAttribute) feature, index);
-		} else if (feature instanceof EReference) {
-			return remove(kyanosEObject, (EReference) feature, index);
-		} else {
-			throw new IllegalArgumentException(feature.toString());
+
+		Integer size = sizesMap.get(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+		// Gete element to remove
+		Object returnValue = map.get(Fun.t3(kyanosEObject.kyanosId(),feature.getName(), index));
+		// Update indexes (element to remove is overwriten)
+		for (int i = index + 1; i < size; i++) {
+			Object movingValue = map.get(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), i));
+			map.put(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), i - 1), movingValue);
 		}
+		sizesMap.put(Fun.t2(kyanosEObject.kyanosId(), feature.getName()), size - 1);
+		return returnValue;
 	}
 
-	protected Object remove(KyanosEObject object, EAttribute eAttribute, int index) {
-		Object[] array = (Object[]) getFromMap(object, eAttribute);
-		Object oldValue = array[index];
-		array = ArrayUtils.remove(array, index);
-		map.put(Fun.t2(object.kyanosId(), eAttribute.getName()), array);
-		return parseMapValue(eAttribute, oldValue);
-	}
 
-	protected Object remove(KyanosEObject object, EReference eReference, int index) {
-		Object[] array = (Object[]) getFromMap(object, eReference);
-		Object oldId = array[index];
-		array = ArrayUtils.remove(array, index);
-		map.put(Fun.t2(object.kyanosId(), eReference.getName()), array);
-		return getEObject((String) oldId);
-
-	}
 
 	@Override
 	public Object move(InternalEObject object, EStructuralFeature feature, int targetIndex, int sourceIndex) {
@@ -226,7 +179,7 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	@Override
 	public void unset(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		map.remove(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+		sizesMap.remove(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
 	}
 
 
@@ -239,8 +192,8 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 	@Override
 	public int size(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
-		return array != null ? array.length : 0; 
+		Integer size = sizesMap.get(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+		return size != null ? size : 0; 
 	}
 
 
@@ -252,40 +205,23 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 
 	@Override
 	public int indexOf(InternalEObject object, EStructuralFeature feature, Object value) {
-		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
-		if (array == null) {
-			return -1;
-		}
-		if (feature instanceof EAttribute) {
-			return ArrayUtils.indexOf(array, serializeToMapValue((EAttribute) feature, value));
-		} else {
-			KyanosEObject childEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(value, KyanosEObject.class);
-			return ArrayUtils.indexOf(array, childEObject.kyanosId());
-		}
+		return ArrayUtils.indexOf(toArray(object, feature), value);
 	}
 
 
 	@Override
 	public int lastIndexOf(InternalEObject object, EStructuralFeature feature, Object value) {
-		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		Object[] array = (Object[]) getFromMap(kyanosEObject, feature);
-		if (array == null) {
-			return -1;
-		}
-		if (feature instanceof EAttribute) {
-			return ArrayUtils.lastIndexOf(array, serializeToMapValue((EAttribute) feature, value));
-		} else {
-			KyanosEObject childEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(value, KyanosEObject.class);
-			return ArrayUtils.lastIndexOf(array, childEObject.kyanosId());
-		}
+		return ArrayUtils.indexOf(toArray(object, feature), value);
 	}
 
 
 	@Override
 	public void clear(InternalEObject object, EStructuralFeature feature) {
 		KyanosEObject kyanosEObject = KyanosEObjectAdapterFactoryImpl.getAdapter(object, KyanosEObject.class);
-		map.put(Fun.t2(kyanosEObject.kyanosId(), feature.getName()), new Object[] {});
+		Integer size = sizesMap.remove(Fun.t2(kyanosEObject.kyanosId(), feature.getName()));
+//		for (int i = 0; i < size; i++) {
+//			map.remove(Fun.t3(kyanosEObject.kyanosId(), feature.getName(), i));
+//		}
 	}
 
 
@@ -414,10 +350,6 @@ public class DirectWriteMapResourceEStoreImpl implements SearcheableResourceESto
 
 	protected static Object serializeToMapValue(EAttribute eAttribute, Object value) {
 		return value != null ? EcoreUtil.convertToString(eAttribute.getEAttributeType(), value) : null;
-	}
-	
-	protected Object getFromMap(KyanosEObject object, EStructuralFeature feature) {
-		return map.get(Fun.t2(object.kyanosId(), feature.getName()));
 	}
 	
 }

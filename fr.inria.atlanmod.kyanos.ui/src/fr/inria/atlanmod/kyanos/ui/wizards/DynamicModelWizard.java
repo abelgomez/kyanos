@@ -45,9 +45,9 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.WizardNewFolderMainPage;
 import org.eclipse.ui.part.ISetSelectionTarget;
 
+import fr.inria.atlanmod.kyanos.KyanosURI;
 import fr.inria.atlanmod.kyanos.core.KyanosEFactory;
 import fr.inria.atlanmod.kyanos.ui.editors.KyanosEditor;
-import fr.inria.atlanmod.kyanos.util.KyanosURI;
 
 /**
  * This is a simple wizard for creating a new dynamic model file.

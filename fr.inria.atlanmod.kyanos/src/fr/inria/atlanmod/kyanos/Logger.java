@@ -8,13 +8,11 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.logger;
+package fr.inria.atlanmod.kyanos;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-
-import fr.inria.atlanmod.kyanos.KyanosPlugin;
 
 
 public class Logger {

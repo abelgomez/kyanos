@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.util;
+package fr.inria.atlanmod.kyanos;
 
 import java.io.File;
 import java.text.MessageFormat;

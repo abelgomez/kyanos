@@ -8,7 +8,7 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.estores.impl;
+package fr.inria.atlanmod.kyanos.datastore.estores.map.impl;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -36,13 +36,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.core.KyanosEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
 import fr.inria.atlanmod.kyanos.datastore.estores.SearcheableResourceEStore;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo.ContainerInfo;
-import fr.inria.atlanmod.kyanos.datastore.estores.impl.pojo.EClassInfo;
-import fr.inria.atlanmod.kyanos.logger.Logger;
 
 public class DirectWriteMapResourceWithListsEStoreImpl implements SearcheableResourceEStore {
 

@@ -30,10 +30,10 @@ import com.tinkerpop.blueprints.util.wrappers.id.IdEdge;
 import com.tinkerpop.blueprints.util.wrappers.id.IdGraph;
 import com.tinkerpop.blueprints.util.wrappers.id.IdVertex;
 
+import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.core.KyanosEObject;
 import fr.inria.atlanmod.kyanos.core.KyanosInternalEObject;
 import fr.inria.atlanmod.kyanos.core.impl.KyanosEObjectAdapterFactoryImpl;
-import fr.inria.atlanmod.kyanos.logger.Logger;
 
 
 public class KyanosGraph extends IdGraph<KeyIndexableGraph> {
