@@ -47,26 +47,24 @@ public abstract class KyanosMigratorUtil {
 	private static final String ROOT_EXTENDS_INTERFACE = KyanosEObject.class.getName();
 
 	public static final String PLUGIN_VARIABLE_KYANOS = "KYANOS=" + KyanosPlugin.PLUGIN_ID;
-	
+
 	private KyanosMigratorUtil() {
 	}
 
-	  public static String adjustGenModel(GenModel genModel)
-	  {
-	    return adjustGenModel(genModel, GenDelegationKind.REFLECTIVE_LITERAL);
-	  }
+	public static String adjustGenModel(GenModel genModel) {
+		return adjustGenModel(genModel, GenDelegationKind.REFLECTIVE_LITERAL);
+	}
 
-	  public static String adjustGenModel(GenModel genModel, GenDelegationKind featureDelegation) {
+	public static String adjustGenModel(GenModel genModel, GenDelegationKind featureDelegation) {
 		StringBuilder builder = new StringBuilder();
 
-	    if (genModel.getFeatureDelegation() != featureDelegation)
-	    {
-	      genModel.setFeatureDelegation(featureDelegation);
-	      builder.append("Set Feature Delegation = ");
-	      builder.append(featureDelegation);
-	      builder.append("\n");
-	    }
-		
+		if (genModel.getFeatureDelegation() != featureDelegation) {
+			genModel.setFeatureDelegation(featureDelegation);
+			builder.append("Set Feature Delegation = ");
+			builder.append(featureDelegation);
+			builder.append("\n");
+		}
+
 		if (!ROOT_EXTENDS_CLASS.equals(genModel.getRootExtendsClass())) {
 			genModel.setRootExtendsClass(ROOT_EXTENDS_CLASS);
 			builder.append("Set Root Extends Class = ");
