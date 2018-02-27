@@ -13,10 +13,10 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: fr.inria.atlanmod.kyanos,
  fr.inria.atlanmod.kyanos.core,
+ fr.inria.atlanmod.kyanos.core.exceptions,
  fr.inria.atlanmod.kyanos.core.graph.impl,
  fr.inria.atlanmod.kyanos.core.impl,
  fr.inria.atlanmod.kyanos.core.map.impl,
- fr.inria.atlanmod.kyanos.datastore.exceptions,
  fr.inria.atlanmod.kyanos.estores,
  fr.inria.atlanmod.kyanos.estores.graph.impl,
  fr.inria.atlanmod.kyanos.estores.impl,

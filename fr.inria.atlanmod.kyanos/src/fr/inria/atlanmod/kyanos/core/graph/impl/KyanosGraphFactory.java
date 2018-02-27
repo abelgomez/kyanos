@@ -29,7 +29,7 @@ import com.tinkerpop.blueprints.util.GraphHelper;
 
 import fr.inria.atlanmod.kyanos.Logger;
 import fr.inria.atlanmod.kyanos.core.KyanosResource;
-import fr.inria.atlanmod.kyanos.datastore.exceptions.InvalidDataStoreException;
+import fr.inria.atlanmod.kyanos.core.exceptions.InvalidDataStoreException;
 
 public class KyanosGraphFactory {
 

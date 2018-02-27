@@ -8,26 +8,25 @@
  * Contributors:
  *     Abel Gómez - initial API and implementation
  ******************************************************************************/
-package fr.inria.atlanmod.kyanos.datastore.exceptions;
+package fr.inria.atlanmod.kyanos.core.exceptions;
 
-import java.io.IOException;
 
-public class InvalidDataStoreException extends IOException {
+public class InvalidOptionsException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	public InvalidDataStoreException() {
+	public InvalidOptionsException() {
 	}
 	
-	public InvalidDataStoreException(String message) {
+	public InvalidOptionsException(String message) {
 		super(message);
 	}
 	
-	public InvalidDataStoreException(Throwable t) {
+	public InvalidOptionsException(Throwable t) {
 		super(t);
 	}
 
-	public InvalidDataStoreException(String message, Throwable t) {
+	public InvalidOptionsException(String message, Throwable t) {
 		super(message, t);
 	}
 	
