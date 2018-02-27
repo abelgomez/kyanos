@@ -21,8 +21,8 @@ public class KyanosResourceFactoryImpl implements KyanosResourceFactory {
 
 	@Override
 	public Resource createResource(URI uri) {
-		if (StringUtils.equals(KyanosURI.KYANOS_SCHEME, uri.scheme())) {
-			return new KyanosResourceImpl(uri);
+		if (StringUtils.equals(KyanosURI.KYANOS_GRAPH_SCHEME, uri.scheme())) {
+			return new KyanosGraphResourceImpl(uri);
 		} else if (StringUtils.equals(KyanosURI.KYANOS_MAP_SCHEME, uri.scheme())) {
 			return new KyanosMapResourceImpl(uri);
 		} else {

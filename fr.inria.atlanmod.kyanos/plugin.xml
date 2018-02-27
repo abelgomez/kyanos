@@ -5,11 +5,11 @@
          point="org.eclipse.emf.ecore.protocol_parser">
       <parser
             class="fr.inria.atlanmod.kyanos.core.impl.KyanosResourceFactoryImpl"
-            protocolName="kyanos">
+            protocolName="kyanos-graph">
       </parser>
       <parser
             class="fr.inria.atlanmod.kyanos.core.impl.KyanosResourceFactoryImpl"
-            protocolName="kyanosmap">
+            protocolName="kyanos-map">
       </parser>
    </extension>
 

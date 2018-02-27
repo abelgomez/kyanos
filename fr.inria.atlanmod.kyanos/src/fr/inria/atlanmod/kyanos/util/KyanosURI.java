@@ -21,9 +21,9 @@ public class KyanosURI extends URI {
 
 	private static final String FILE_SCHEME = "file";
 
-	public static final String KYANOS_SCHEME = "kyanos";
+	public static final String KYANOS_GRAPH_SCHEME = "kyanos-graph";
 
-	public static final String KYANOS_MAP_SCHEME = "kyanosmap";
+	public static final String KYANOS_MAP_SCHEME = "kyanos-map";
 	
 	protected URI internalUri;
 	
@@ -35,7 +35,7 @@ public class KyanosURI extends URI {
 	public static URI createKyanosURI(URI uri) {
 		if (FILE_SCHEME.equals(uri.scheme())) {
 			return createKyanosURI(FileUtils.getFile(uri.toFileString()));
-		} else if (KYANOS_SCHEME.equals(uri.scheme())) {
+		} else if (KYANOS_GRAPH_SCHEME.equals(uri.scheme())) {
 			return new KyanosURI(uri.hashCode(), uri);
 		} else if (KYANOS_MAP_SCHEME.equals(uri.scheme())) {
 			return new KyanosURI(uri.hashCode(), uri);
@@ -47,7 +47,7 @@ public class KyanosURI extends URI {
 	public static URI createKyanosURI(File file) {
 		URI fileUri = URI.createFileURI(file.getAbsolutePath());
 		URI uri = URI.createHierarchicalURI(
-				KyanosURI.KYANOS_SCHEME, 
+				KyanosURI.KYANOS_GRAPH_SCHEME, 
 				fileUri.authority(),
 				fileUri.device(),
 				fileUri.segments(),

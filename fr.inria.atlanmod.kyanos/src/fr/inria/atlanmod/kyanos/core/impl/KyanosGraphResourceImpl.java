@@ -55,7 +55,7 @@ import fr.inria.atlanmod.kyanos.datastore.graphs.KyanosGraphFactory;
 import fr.inria.atlanmod.kyanos.logger.Logger;
 import fr.inria.atlanmod.kyanos.util.KyanosURI;
 
-public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
+public class KyanosGraphResourceImpl extends ResourceImpl implements KyanosResource {
 
 	/**
 	 * Fake {@link EStructuralFeature} that represents the
@@ -107,14 +107,14 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 	 */
 	protected KyanosGraph kyanosGraph;
 
-	public KyanosResourceImpl(URI uri) {
+	public KyanosGraphResourceImpl(URI uri) {
 		super(uri);
 		this.kyanosGraph = KyanosGraphFactory.createTransientGraph();
 		this.eStore = new DirectWriteGraphResourceEStoreImpl(this, kyanosGraph);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				KyanosResourceImpl.this.kyanosGraph.shutdown();
+				KyanosGraphResourceImpl.this.kyanosGraph.shutdown();
 			}
 		});
 	}
@@ -279,7 +279,7 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 
 		@Override
 		public Object getNotifier() {
-			return KyanosResourceImpl.this;
+			return KyanosGraphResourceImpl.this;
 		}
 
 		@Override
@@ -289,7 +289,7 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 
 		@Override
 		protected boolean isNotificationRequired() {
-			return KyanosResourceImpl.this.eNotificationRequired();
+			return KyanosGraphResourceImpl.this.eNotificationRequired();
 		}
 
 		@Override
@@ -310,16 +310,16 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 		@Override
 		public NotificationChain inverseAdd(EObject object, NotificationChain notifications) {
 			InternalEObject eObject = (InternalEObject) object;
-			notifications = eObject.eSetResource(KyanosResourceImpl.this, notifications);
-			KyanosResourceImpl.this.attached(eObject);
+			notifications = eObject.eSetResource(KyanosGraphResourceImpl.this, notifications);
+			KyanosGraphResourceImpl.this.attached(eObject);
 			return notifications;
 		}
 
 		@Override
 		public NotificationChain inverseRemove(EObject object, NotificationChain notifications) {
 			InternalEObject eObject = (InternalEObject) object;
-			if (KyanosResourceImpl.this.isLoaded || unloadingContents != null) {
-				KyanosResourceImpl.this.detached(eObject);
+			if (KyanosGraphResourceImpl.this.isLoaded || unloadingContents != null) {
+				KyanosGraphResourceImpl.this.detached(eObject);
 			}
 			return eObject.eSetResource(null, notifications);
 		}
@@ -341,7 +341,7 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 			// compiler
 			for (EObject element : hardLinksList) {
 				KyanosInternalEObject internalElement = KyanosEObjectAdapterFactoryImpl.getAdapter(element, KyanosInternalEObject.class);
-				internalElement.kyanosSetResource(KyanosResourceImpl.this);
+				internalElement.kyanosSetResource(KyanosGraphResourceImpl.this);
 			}
 			super.delegateAdd(index, object);
 		}
@@ -395,10 +395,10 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 		}
 
 		protected void loaded() {
-			if (!KyanosResourceImpl.this.isLoaded()) {
-				Notification notification = KyanosResourceImpl.this.setLoaded(true);
+			if (!KyanosGraphResourceImpl.this.isLoaded()) {
+				Notification notification = KyanosGraphResourceImpl.this.setLoaded(true);
 				if (notification != null) {
-					KyanosResourceImpl.this.eNotify(notification);
+					KyanosGraphResourceImpl.this.eNotify(notification);
 				}
 			}
 		}
@@ -410,7 +410,7 @@ public class KyanosResourceImpl extends ResourceImpl implements KyanosResource {
 		}
 	}
 
-	public static void shutdownWithoutUnload(KyanosResourceImpl resource) {
+	public static void shutdownWithoutUnload(KyanosGraphResourceImpl resource) {
 		resource.shutdown();
 	}
 }
