@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import io.github.abelgomez.kyanos.KyanosURI;
 import io.github.abelgomez.kyanos.core.KyanosResourceFactory;
 import io.github.abelgomez.kyanos.graph.impl.KyanosGraphResourceImpl;
+import io.github.abelgomez.kyanos.hbase.impl.KyanosHbaseResourceImpl;
 import io.github.abelgomez.kyanos.map.impl.KyanosMapResourceImpl;
 
 public class KyanosResourceFactoryImpl implements KyanosResourceFactory {
@@ -27,6 +28,8 @@ public class KyanosResourceFactoryImpl implements KyanosResourceFactory {
 			return new KyanosGraphResourceImpl(uri);
 		} else if (StringUtils.equals(KyanosURI.KYANOS_MAP_SCHEME, uri.scheme())) {
 			return new KyanosMapResourceImpl(uri);
+		} else if (StringUtils.equals(KyanosURI.KYANOS_HBASE_SCHEME, uri.scheme())) {
+			return new KyanosHbaseResourceImpl(uri);
 		} else {
 			return null;
 		}

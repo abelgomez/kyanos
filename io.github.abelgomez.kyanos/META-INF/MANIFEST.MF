@@ -5,10 +5,11 @@ Bundle-SymbolicName: io.github.abelgomez.kyanos;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: io.github.abelgomez.kyanos.KyanosPlugin
 Bundle-Vendor: Abel Gómez
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.emf.ecore;visibility:=reexport,
- com.tinkerpop.blueprints,
- org.mapdb
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.13.0",
+ org.eclipse.emf.ecore;bundle-version="2.13.0";visibility:=reexport,
+ com.tinkerpop.blueprints;bundle-version="2.4.0",
+ org.mapdb;bundle-version="0.9.10",
+ org.apache.hadoop.hbase;bundle-version="1.2.6"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: io.github.abelgomez.kyanos,
@@ -19,6 +20,8 @@ Export-Package: io.github.abelgomez.kyanos,
  io.github.abelgomez.kyanos.estores.impl,
  io.github.abelgomez.kyanos.graph.estores.impl,
  io.github.abelgomez.kyanos.graph.impl,
+ io.github.abelgomez.kyanos.hbase.estores.impl,
+ io.github.abelgomez.kyanos.hbase.impl,
  io.github.abelgomez.kyanos.map.estores.impl,
  io.github.abelgomez.kyanos.map.impl
 Bundle-ClassPath: .,

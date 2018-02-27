@@ -4,10 +4,10 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * Contributors:
  *     Abel Gómez - initial API and implementation
- *******************************************************************************/
+ ******************************************************************************/
 package io.github.abelgomez.kyanos;
 
 import java.io.File;
@@ -24,6 +24,8 @@ public class KyanosURI extends URI {
 	public static final String KYANOS_GRAPH_SCHEME = "kyanos-graph";
 
 	public static final String KYANOS_MAP_SCHEME = "kyanos-map";
+
+	public static final String KYANOS_HBASE_SCHEME = "kyanos-hbase";
 	
 	protected URI internalUri;
 	
@@ -38,6 +40,8 @@ public class KyanosURI extends URI {
 		} else if (KYANOS_GRAPH_SCHEME.equals(uri.scheme())) {
 			return new KyanosURI(uri.hashCode(), uri);
 		} else if (KYANOS_MAP_SCHEME.equals(uri.scheme())) {
+			return new KyanosURI(uri.hashCode(), uri);
+		} else if (KYANOS_HBASE_SCHEME.equals(uri.scheme())) {
 			return new KyanosURI(uri.hashCode(), uri);
 		} else {
 			throw new IllegalArgumentException(MessageFormat.format("Unsupported URI type {0}", uri.toString()));
@@ -65,6 +69,17 @@ public class KyanosURI extends URI {
 				fileUri.segments(),
 				fileUri.query(),
 				fileUri.fragment());
+		return new KyanosURI(uri.hashCode(), uri);
+	}
+
+	public static URI createKyanosHBaseURI(String authority, String table) {
+		URI uri = URI.createHierarchicalURI(
+				KyanosURI.KYANOS_HBASE_SCHEME, 
+				authority,
+				null,
+				new String[] { table },
+				null,
+				null);
 		return new KyanosURI(uri.hashCode(), uri);
 	}
 
